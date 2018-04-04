@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -26,10 +27,7 @@ class HomeController extends Controller
     public function index()
     {
         $email = Auth::user()->email;
-        $files = collect(Storage::files($email));
-        $files = $files->map(function($value, $key) use($email) {
-            return explode($email."/", $value)[1];
-        })->toArray();
+        $files = $this->getFiles($email);
 
         return view('home', compact('files'));
     }
@@ -50,16 +48,41 @@ class HomeController extends Controller
 
     public function files($email)
     {
-        if(!Auth::user()->hasRole('superuser'))
-        {
-            abort(403);
+        if(!Auth::user()->hasRole('superuser')) {
+            return redirect("/");
         }
 
+        $files = $this->getFiles($email);
+
+        return view('home', compact('files'));
+    }
+
+    public function assignRole($id)
+    {
+        if(!Auth::user()->hasRole('superuser')) {
+            return redirect("/");
+        }
+        $user = User::find($id);
+        $user->assignRole('superuser');
+        return redirect()->back();
+    }
+
+    public function revokeRole($id)
+    {
+        if(!Auth::user()->hasRole('revoke')) {
+            abort(403);
+        }
+        $user = User::find($id);
+        $user->removeRole('superuser');
+        return redirect()->back();
+    }
+
+    private function getFiles($email)
+    {
         $files = collect(Storage::files($email));
         $files = $files->map(function($value, $key) use($email) {
             return explode($email."/", $value)[1];
-        })->toArray();
-
-        return view('home', compact('files'));
+        })->sort()->toArray();
+        return $files;
     }
 }

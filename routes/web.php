@@ -21,3 +21,5 @@ Route::get('download/{file}', 'HomeController@download');
 
 Route::post('upload', 'HomeController@upload');
 Route::get('files/{email}', 'HomeController@files');
+Route::get('assign/{id}', 'HomeController@assignRole');
+Route::get('revoke/{id}', 'HomeController@revokeRole');

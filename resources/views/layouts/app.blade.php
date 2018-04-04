@@ -93,6 +93,7 @@
         </div>
       </div>
     </div>
+    @if(!Auth::guest())
     <div class="modal" id="modalUser" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -112,7 +113,14 @@
                     @foreach(App\User::all() as $user)
                         <tr>
                             <td>{{ $user->email }}</td>
-                            <td><a href="{{ url('files/'.$user->email) }}" class="btn btn-primary">Show</a>
+                            <td>
+                                <a href="{{ url('files/'.$user->email) }}" class="btn btn-primary">Show</a>
+                                @if(!$user->hasRole('superuser') && Auth::user()->hasRole('revoke'))
+                                    <a href="{{ url('assign/'.$user->id) }}" class="btn btn-primary">Assign Superuser</a>
+                                @elseif(Auth::user()->hasRole('revoke') && Auth::user()->id != $user->id)
+                                    <a href="{{ url('revoke/'.$user->id) }}" class="btn btn-danger">Revoke Superuser</a>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -121,5 +129,6 @@
         </div>
       </div>
     </div>
+    @endif
 </body>
 </html>
